@@ -1,0 +1,67 @@
+@import url('default.css');
+
+/* ==========================================
+   TEMA: CLEAN NORDIC LIGHT (CLARO Y MINIMALISTA)
+   ========================================== */
+
+:root {
+  --bg-color: #f3f4f6;
+  --card-bg: #ffffff;
+  --accent-color: #2563eb;
+  --accent-hover: #1d4ed8;
+  --text-color: #1f2937;
+  --text-dim: #6b7280;
+  --border-color: #e5e7eb;
+  --modal-overlay: rgba(255, 255, 255, 0.7);
+}
+
+.portada {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.portada::after {
+  background: linear-gradient(to top, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.3) 60%, transparent 100%);
+}
+
+.portada h2 {
+  color: var(--text-color);
+}
+
+.portada:hover {
+  box-shadow: 0 20px 30px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.tab-btn.active {
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+}
+
+.manage-item {
+  background-color: #f9fafb;
+  border: 1px solid #e5e7eb;
+}
+
+.btn-settings, .btn-save, .btn-add-exe {
+  background-color: var(--accent-color);
+  color: white;
+}
+
+.btn-settings:hover, .btn-save:hover, .btn-add-exe:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-launch {
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  color: var(--text-color);
+}
+
+.btn-launch:hover {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: white;
+}

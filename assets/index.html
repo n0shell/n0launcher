@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Custom Game Launcher</title>
+  <link id="themeStylesheet" rel="stylesheet" href="css/default.css">
+  <style>
+    /* Estilos base y de contenedor para corregir el estado vacío y centrarlo */
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    #seleccion {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      width: 100vw;
+      height: 100vh;
+      box-sizing: border-box;
+      padding: 80px 40px 40px 40px;
+      overflow-y: auto;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      width: 100%;
+      height: 100%;
+    }
+
+    /* Estilos limpios para asegurar que la barra superior y el botón de ajustes no se solapen */
+    .header-bar {
+      position: fixed;
+      top: 0;
+      right: 0;
+      padding: 15px 20px;
+      z-index: 100;
+      display: flex;
+      justify-content: flex-end;
+      width: 100%;
+      pointer-events: none; /* Permite hacer clic a través del espacio vacío si lo hubiera */
+    }
+    .header-bar .btn-settings {
+      pointer-events: auto;
+      background: rgba(0, 0, 0, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: #fff;
+      padding: 8px 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+      transition: background 0.2s, transform 0.2s;
+      font-size: 14px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .header-bar .btn-settings:hover {
+      background: rgba(255, 255, 255, 0.2);
+      transform: scale(1.05);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Barra superior limpia con el botón de ajustes -->
+  <div class="header-bar">
+    <button class="btn-settings" onclick="openSettingsModal()">⚙️ Ajustes</button>
+  </div>
+
+  <div id="seleccion"></div>
+
+  <!-- Modal Ajustes con Pestañas -->
+  <div class="modal" id="settingsModal">
+    <div class="modal-content">
+      
+      <!-- Navegación por pestañas -->
+      <div class="tabs-header">
+        <button class="tab-btn active" onclick="switchTab('gamesTab', this)">🎮 Catálogo de Juegos</button>
+        <button class="tab-btn" onclick="switchTab('themeTab', this)">🎨 Apariencia y Pantalla</button>
+      </div>
+
+      <!-- Pestaña 1: Gestión de Juegos -->
+      <div id="gamesTab" class="tab-content active">
+        <h3>Juegos Registrados</h3>
+        <br>
+        <div class="games-manage-list" id="manageList"></div>
+
+        <h3 id="formTitle">Añadir Nuevo Juego</h3>
+        <br>
+        <input type="hidden" id="editingGameId" value="">
+
+        <div class="form-group">
+          <label>Nombre del Juego</label>
+          <input type="text" id="gameName" placeholder="Ej: Call of Duty: Modern Warfare">
+        </div>
+
+        <div class="form-group">
+          <label>Ruta o URL de la Portada (Vertical)</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="gameCover" placeholder="img/portada.jpg" oninput="updatePreviews()">
+            <button type="button" onclick="browseImage('gameCover')" style="padding: 8px 12px; font-size: 13px; white-space: nowrap; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; cursor: pointer;">📁 Buscar</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Ruta o URL del Banner (Fondo Horizontal)</label>
+          <div style="display: flex; gap: 8px;">
+            <input type="text" id="gameBanner" placeholder="img/banner.jpg" oninput="updatePreviews()">
+            <button type="button" onclick="browseImage('gameBanner')" style="padding: 8px 12px; font-size: 13px; white-space: nowrap; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; cursor: pointer;">📁 Buscar</button>
+          </div>
+        </div>
+
+        <label style="font-size: 14px;">Vista Previa</label>
+        <div class="preview-box">
+          <div class="preview-cover" id="prevCover">Portada</div>
+          <div class="preview-banner" id="prevBanner">Banner</div>
+        </div>
+        <br>
+
+        <div class="form-group">
+          <label>Ejecutables del Juego (.exe)</label>
+          <div id="exeList">
+            <div class="exe-item">
+              <input type="text" placeholder="Nombre (Ej: Singleplayer)" class="exe-name" style="flex: 1;">
+              <input type="text" placeholder="Ruta C:\Juegos\game.exe" class="exe-path" style="flex: 2;">
+              <button type="button" onclick="browseExe(this)" style="padding: 6px 12px; font-size: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; cursor: pointer;">📁</button>
+            </div>
+          </div>
+          <button type="button" class="btn-add-exe" onclick="addExeRow()">+ Añadir ejecutable</button>
+        </div>
+
+        <button class="btn-save" onclick="saveGame()">Guardar Juego</button>
+        <button class="btn-save" style="background:#555; color:#fff; margin-top:8px;" onclick="closeSettingsModal()">Cancelar</button>
+      </div>
+
+      <!-- Pestaña 2: Apariencia, Temas y Pantalla Completa -->
+      <div id="themeTab" class="tab-content">
+        <h3>Personalización Visual y Pantalla</h3>
+        <br>
+        
+        <div class="form-group">
+          <label>Modo de Pantalla</label>
+          <select id="fullscreenSelector" onchange="toggleFullscreen(this.value)">
+            <option value="false">Modo Ventana</option>
+            <option value="true">Pantalla Completa</option>
+          </select>
+        </div>
+
+        <br>
+        <div class="form-group">
+          <label>Tema Actual</label>
+          <select id="themeSelector" onchange="changeTheme(this.value)"></select>
+        </div>
+
+        <br>
+        <div class="form-group" style="padding: 15px; border: 1px dashed rgba(255,255,255,0.2); border-radius: 6px;">
+          <label style="font-weight: bold; margin-bottom: 8px;">Importar Estilo Personalizado</label>
+          <p style="font-size: 13px; opacity: 0.6; margin-bottom: 12px;">Haz clic abajo para cargar un archivo .css a tu carpeta de temas.</p>
+          <button type="button" onclick="importTheme()" style="width: 100%; padding: 10px; background: var(--accent-color, #4f46e5); border: none; color: #fff; border-radius: 8px; font-weight: bold; cursor: pointer;">
+            📁 Cargar Archivo .CSS
+          </button>
+        </div>
+
+        <button class="btn-save" style="background:#555; color:#fff; margin-top:20px;" onclick="closeSettingsModal()">Cerrar Ajustes</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Modal Popup de Lanzamiento -->
+  <div class="modal" id="launchModal">
+    <div class="launch-modal-content" id="launchBanner">
+      <div class="launch-overlay">
+        <h2 class="launch-title" id="launchGameTitle">Nombre del Juego</h2>
+        <div class="exe-buttons" id="launchButtons"></div>
+        <button class="btn-close-popup" onclick="closeLaunchModal()">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let gamesList = [];
+
+    window.addEventListener('pywebviewready', () => {
+      initLauncher();
+    });
+
+    function initLauncher() {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.get_config().then(config => {
+          gamesList = config.games || [];
+          applyTheme(config.theme || 'default.css');
+          loadThemeSelector(config.theme || 'default.css');
+          
+          const fsSelector = document.getElementById('fullscreenSelector');
+          if (fsSelector) fsSelector.value = config.fullscreen ? "true" : "false";
+
+          renderLauncher();
+          renderManageList();
+        });
+      }
+    }
+
+    function switchTab(tabId, btnElement) {
+      document.querySelectorAll('.tab-content').forEach(tab => tab.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      
+      document.getElementById(tabId).classList.add('active');
+      btnElement.classList.add('active');
+    }
+
+    function applyTheme(cssFile) {
+      const linkTag = document.getElementById('themeStylesheet');
+      linkTag.href = `css/${cssFile}`;
+    }
+
+    function changeTheme(cssFile) {
+      applyTheme(cssFile);
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.set_theme(cssFile);
+      }
+    }
+
+    function toggleFullscreen(value) {
+      const isFs = value === "true";
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.set_fullscreen(isFs);
+      }
+    }
+
+    function importTheme() {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.import_custom_theme().then(res => {
+          if (res && res.status === 'ok') {
+            loadThemeSelector(res.filename);
+            applyTheme(res.filename);
+          }
+        });
+      }
+    }
+
+    function browseImage(inputId) {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.select_image().then(path => {
+          if (path) {
+            document.getElementById(inputId).value = path;
+            updatePreviews();
+          }
+        });
+      }
+    }
+
+    function browseExe(btnElement) {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.select_file("exe").then(path => {
+          if (path) {
+            const exeRow = btnElement.parentElement;
+            const pathInput = exeRow.querySelector('.exe-path');
+            if (pathInput) pathInput.value = path;
+          }
+        });
+      }
+    }
+
+    function loadThemeSelector(currentTheme) {
+      if (window.pywebview && window.pywebview.api) {
+        window.pywebview.api.get_available_themes().then(themes => {
+          const selector = document.getElementById('themeSelector');
+          selector.innerHTML = '';
+          themes.forEach(t => {
+            const opt = document.createElement('option');
+            opt.value = t;
+            opt.innerText = t.replace('.css', '').toUpperCase();
+            if (t === currentTheme) opt.selected = true;
+            selector.appendChild(opt);
+          });
+        });
+      }
+    }
+
+    function renderLauncher() {
+      const container = document.getElementById('seleccion');
+      container.innerHTML = '';
+      container.className = '';
+
+      if (!gamesList || gamesList.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h2>No hay juegos añadidos</h2>
+            <p style="opacity: 0.7; margin-bottom: 20px;">Abre los ajustes para configurar tus títulos.</p>
+            <button class="btn-settings" style="pointer-events: auto; background: var(--accent-color, #4f46e5); border: none; color: #fff; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;" onclick="openSettingsModal()">+ Añadir primer juego</button>
+          </div>
+        `;
+        return;
+      }
+
+      if (gamesList.length === 1) {
+        container.classList.add('count-1');
+      } else if (gamesList.length === 2) {
+        container.classList.add('count-2');
+      } else {
+        container.classList.add('count-multi');
+      }
+
+      gamesList.forEach(game => {
+        const div = document.createElement('div');
+        div.className = 'portada';
+
+        const bgDiv = document.createElement('div');
+        bgDiv.className = 'portada-bg';
+        bgDiv.style.backgroundImage = `url('${game.cover.replace(/\\/g, '/')}')`;
+
+        div.appendChild(bgDiv);
+        div.innerHTML += `<h2>${game.name}</h2>`;
+        div.onclick = () => selectGame(game);
+        container.appendChild(div);
+      });
+    }
+
+    function renderManageList() {
+      const list = document.getElementById('manageList');
+      list.innerHTML = '';
+      if (!gamesList || gamesList.length === 0) {
+        list.innerHTML = '<p style="font-size:14px; opacity:0.6;">No hay juegos guardados.</p>';
+        return;
+      }
+      gamesList.forEach(g => {
+        const item = document.createElement('div');
+        item.className = 'manage-item';
+        item.innerHTML = `
+          <span>${g.name}</span>
+          <div class="manage-actions">
+            <button class="btn-edit" onclick="editGame('${g.id}')">Editar</button>
+            <button class="btn-delete" onclick="deleteGame('${g.id}')">Eliminar</button>
+          </div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    function openSettingsModal() {
+      resetForm();
+      document.getElementById('settingsModal').classList.add('active');
+    }
+
+    function closeSettingsModal() {
+      document.getElementById('settingsModal').classList.remove('active');
+    }
+
+    function resetForm() {
+      document.getElementById('editingGameId').value = '';
+      document.getElementById('formTitle').innerText = 'Añadir Nuevo Juego';
+      document.getElementById('gameName').value = '';
+      document.getElementById('gameCover').value = '';
+      document.getElementById('gameBanner').value = '';
+      document.getElementById('prevCover').style.backgroundImage = 'none';
+      document.getElementById('prevBanner').style.backgroundImage = 'none';
+      
+      const exeList = document.getElementById('exeList');
+      exeList.innerHTML = `
+        <div class="exe-item">
+          <input type="text" placeholder="Nombre (Ej: Singleplayer)" class="exe-name" style="flex: 1;">
+          <input type="text" placeholder="Ruta C:\\Juegos\\game.exe" class="exe-path" style="flex: 2;">
+          <button type="button" onclick="browseExe(this)" style="padding: 6px 12px; font-size: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; cursor: pointer;">📁</button>
+        </div>
+      `;
+    }
+
+    function editGame(gameId) {
+      const game = gamesList.find(g => g.id === gameId);
+      if (!game) return;
+
+      document.getElementById('editingGameId').value = game.id;
+      document.getElementById('formTitle').innerText = 'Editar Juego';
+      document.getElementById('gameName').value = game.name;
+      document.getElementById('gameCover').value = game.cover || '';
+      document.getElementById('gameBanner').value = game.banner || '';
+      updatePreviews();
+
+      const exeList = document.getElementById('exeList');
+      exeList.innerHTML = '';
+      game.executables.forEach(exe => {
+        const div = document.createElement('div');
+        div.className = 'exe-item';
+        div.innerHTML = `
+          <input type="text" value="${exe.name}" class="exe-name" style="flex: 1;">
+          <input type="text" value="${exe.path}" class="exe-path" style="flex: 2;">
+          <button type="button" onclick="browseExe(this)" style="padding: 6px 12px; font-size: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; cursor: pointer;">📁</button>
+        `;
+        exeList.appendChild(div);
+      });
+    }
+
+    function deleteGame(gameId) {
+      if (confirm("¿Eliminar este juego?")) {
+        window.pywebview.api.delete_game(gameId).then(() => {
+          initLauncher();
+        });
+      }
+    }
+
+    function updatePreviews() {
+      const coverVal = document.getElementById('gameCover').value.replace(/\\/g, '/');
+      const bannerVal = document.getElementById('gameBanner').value.replace(/\\/g, '/');
+      const prevCover = document.getElementById('prevCover');
+      const prevBanner = document.getElementById('prevBanner');
+
+      if (coverVal) prevCover.style.backgroundImage = `url('${coverVal}')`;
+      if (bannerVal) prevBanner.style.backgroundImage = `url('${bannerVal}')`;
+    }
+
+    function addExeRow() {
+      const container = document.getElementById('exeList');
+      const div = document.createElement('div');
+      div.className = 'exe-item';
+      div.innerHTML = `
+        <input type="text" placeholder="Nombre (Ej: Multiplayer)" class="exe-name" style="flex: 1;">
+        <input type="text" placeholder="Ruta C:\\Juegos\\mp.exe" class="exe-path" style="flex: 2;">
+        <button type="button" onclick="browseExe(this)" style="padding: 6px 12px; font-size: 12px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #fff; border-radius: 8px; cursor: pointer;">📁</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function saveGame() {
+      const editingId = document.getElementById('editingGameId').value;
+      const name = document.getElementById('gameName').value;
+      const cover = document.getElementById('gameCover').value;
+      const banner = document.getElementById('gameBanner').value;
+
+      const exeNames = document.querySelectorAll('.exe-name');
+      const exePaths = document.querySelectorAll('.exe-path');
+      
+      let executables = [];
+      exeNames.forEach((input, index) => {
+        if (input.value && exePaths[index].value) {
+          executables.push({
+            name: input.value,
+            path: exePaths[index].value,
+            is_default: index === 0
+          });
+        }
+      });
+
+      if (!name || executables.length === 0) {
+        alert("Introduce el nombre del juego y al menos un ejecutable.");
+        return;
+      }
+
+      const gameData = {
+        id: editingId ? editingId : "game-" + Date.now(),
+        name: name,
+        cover: cover,
+        banner: banner,
+        executables: executables
+      };
+
+      const promise = editingId 
+        ? window.pywebview.api.update_game(gameData)
+        : window.pywebview.api.add_game(gameData);
+
+      promise.then(() => {
+        closeSettingsModal();
+        initLauncher();
+      });
+    }
+
+    function selectGame(game) {
+      document.getElementById('launchGameTitle').innerText = game.name;
+      const bannerBox = document.getElementById('launchBanner');
+      const bgImg = game.banner ? game.banner.replace(/\\/g, '/') : game.cover.replace(/\\/g, '/');
+      bannerBox.style.backgroundImage = `url('${bgImg}')`;
+
+      const container = document.getElementById('launchButtons');
+      container.innerHTML = '';
+
+      game.executables.forEach((exe, idx) => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-launch';
+        btn.innerHTML = `<span class="btn-text">▶ ${exe.name}</span> <small style="font-size:12px; opacity:0.8;">${idx === 0 ? '(Predeterminado)' : ''}</small>`;
+        btn.onclick = () => runExe(exe.path, btn);
+        container.appendChild(btn);
+      });
+
+      document.getElementById('launchModal').classList.add('active');
+    }
+
+    function closeLaunchModal() {
+      document.getElementById('launchModal').classList.remove('active');
+    }
+
+    function runExe(path, btnElement) {
+      const textSpan = btnElement.querySelector('.btn-text');
+      if (textSpan) textSpan.innerText = "⏳ Iniciando...";
+
+      window.pywebview.api.launch_executable(path).then(res => {
+        if (res && res.status === 'error') {
+          alert(res.message);
+          if (textSpan) textSpan.innerText = "▶ Reintentar";
+        } else {
+          setTimeout(() => {
+            closeLaunchModal();
+          }, 600);
+        }
+      });
+    }
+  </script>
+</body>
+</html>

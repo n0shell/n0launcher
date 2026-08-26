@@ -1,0 +1,71 @@
+@import url('default.css');
+
+/* ==========================================
+   TEMA: PAPER / PERGAMINO (CÁLIDO Y VINTAGE)
+   ========================================== */
+
+:root {
+  --bg-color: #f4ebd9;
+  --card-bg: #efe2c8;
+  --accent-color: #b45309;
+  --accent-hover: #92400e;
+  --text-color: #292524;
+  --text-dim: #78716c;
+  --border-color: #d6c5a0;
+  --modal-overlay: rgba(244, 235, 217, 0.85);
+}
+
+body {
+  font-family: 'Georgia', 'Times New Roman', serif;
+}
+
+.portada {
+  border: 1px solid var(--border-color);
+}
+
+.portada::after {
+  background: linear-gradient(to top, rgba(244, 235, 217, 0.95) 0%, rgba(244, 235, 217, 0.4) 60%, transparent 100%);
+}
+
+.portada h2 {
+  color: var(--text-color);
+  font-style: italic;
+}
+
+.portada:hover {
+  box-shadow: 0 15px 30px rgba(180, 83, 9, 0.15);
+  border-color: var(--accent-color);
+}
+
+.tab-btn.active {
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+}
+
+.manage-item {
+  background-color: #e9d9b8;
+  border-left: 3px solid var(--accent-color);
+}
+
+.btn-settings, .btn-save, .btn-add-exe {
+  background-color: var(--accent-color);
+  color: #f4ebd9;
+  font-family: 'Georgia', serif;
+}
+
+.btn-settings:hover, .btn-save:hover, .btn-add-exe:hover {
+  background-color: var(--accent-hover);
+}
+
+.btn-launch {
+  background-color: #efe2c8;
+  border: 1px solid var(--border-color);
+  color: var(--text-color);
+  font-family: 'Georgia', serif;
+}
+
+.btn-launch:hover {
+  background-color: var(--accent-color);
+  border-color: var(--accent-color);
+  color: #ffffff;
+}

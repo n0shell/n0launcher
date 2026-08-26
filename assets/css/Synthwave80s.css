@@ -1,0 +1,78 @@
+@import url('default.css');
+
+/* ==========================================
+   TEMA: SYNTHWAVE 80s (RETRO RETROFUTURISTA)
+   ========================================== */
+
+:root {
+  --bg-color: #120429;
+  --card-bg: #240a4a;
+  --accent-color: #ff71ce;
+  --accent-hover: #01cdfe;
+  --text-color: #fffb96;
+  --text-dim: #05ffa1;
+  --border-color: #b967ff;
+  --modal-overlay: rgba(18, 4, 41, 0.85);
+}
+
+#seleccion {
+  background: linear-gradient(180deg, #120429 0%, #240a4a 60%, #3a005c 100%);
+}
+
+.portada {
+  border: 2px solid var(--border-color);
+}
+
+.portada::after {
+  background: linear-gradient(to top, rgba(18, 4, 41, 0.95) 0%, rgba(18, 4, 41, 0.3) 60%, rgba(0, 0, 0, 0.1) 100%);
+}
+
+.portada h2 {
+  color: var(--text-color);
+  text-shadow: 0 0 12px var(--accent-color);
+}
+
+.portada:hover {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 25px var(--accent-color);
+}
+
+.modal-content {
+  border: 2px solid var(--border-color);
+  box-shadow: 0 0 30px rgba(185, 103, 255, 0.4);
+}
+
+.tab-btn.active {
+  color: var(--accent-color);
+  border-bottom-color: var(--accent-color);
+  text-shadow: 0 0 10px var(--accent-color);
+}
+
+.manage-item {
+  background-color: #180638;
+  border-left: 3px solid var(--accent-color);
+}
+
+.btn-settings, .btn-save, .btn-add-exe {
+  background-color: var(--accent-color);
+  color: #120429;
+  font-weight: bold;
+}
+
+.btn-settings:hover, .btn-save:hover, .btn-add-exe:hover {
+  background-color: var(--accent-hover);
+  color: #ffffff;
+  box-shadow: 0 0 20px var(--accent-hover);
+}
+
+.btn-launch {
+  background-color: rgba(36, 10, 74, 0.8);
+  border-color: var(--accent-color);
+  color: var(--text-color);
+}
+
+.btn-launch:hover {
+  background-color: var(--accent-color);
+  color: #120429;
+  box-shadow: 0 0 20px var(--accent-color);
+}
